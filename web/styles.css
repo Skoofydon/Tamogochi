@@ -440,3 +440,8 @@ body {
 .action-btn:disabled:active {
     transform: none;
 }
+
+.action-btn.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
