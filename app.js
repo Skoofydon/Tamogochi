@@ -405,4 +405,43 @@ class TamagochiGame {
     showTab(tab) {
         // Заглушка для других вкладок
         if (tab !== 'room') {
-            this.showModal(`📋 ${tab}`, 'Этот раздел в разработке. Скоро здесь будет магазин, ре
+            this.showModal(`📋 ${tab}`, 'Этот раздел в разработке. Скоро здесь будет магазин, рейтинг и соседи!');
+            document.querySelector('.menu-btn[data-tab="room"]').classList.add('active');
+        }
+    }
+    
+    saveGame() {
+        const saveData = {
+            stats: this.stats,
+            coins: this.coins,
+            level: this.level,
+            experience: this.experience,
+            foodItems: this.foodItems,
+            booksCount: this.booksCount
+        };
+        localStorage.setItem('tamagochiSave', JSON.stringify(saveData));
+    }
+    
+    loadGame() {
+        const saved = localStorage.getItem('tamagochiSave');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                this.stats = data.stats;
+                this.coins = data.coins;
+                this.level = data.level;
+                this.experience = data.experience;
+                this.foodItems = data.foodItems || ['🍎', '🍕', '🥪'];
+                this.booksCount = data.booksCount || 2;
+                this.updateFoodItems();
+                this.updateBooks();
+                this.updateStatus();
+            } catch(e) {
+                console.error('Ошибка загрузки:', e);
+            }
+        }
+    }
+}
+
+// Запуск игры
+const game = new TamagochiGame();
