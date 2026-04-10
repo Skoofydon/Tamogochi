@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Тамагочи-Общага</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
     <div class="app">
-        <!-- Шапка с персонажем -->
         <div class="header">
             <div class="student-info">
                 <div class="avatar-container">
@@ -31,7 +29,6 @@
             </div>
         </div>
 
-        <!-- Комната общежития -->
         <div class="room">
             <div class="room-grid">
                 <div class="bed-area">
@@ -53,7 +50,6 @@
             </div>
         </div>
 
-        <!-- Шкалы характеристик -->
         <div class="stats">
             <div class="stat-item">
                 <div class="stat-icon">⚡</div>
@@ -85,7 +81,6 @@
             </div>
         </div>
 
-        <!-- Кнопки действий -->
         <div class="actions">
             <button class="action-btn primary" data-action="eat">
                 <span class="btn-icon">🍽️</span>
@@ -117,15 +112,18 @@
                 <span class="btn-text">Вписка</span>
                 <span class="btn-social">+Друзья</span>
             </button>
+            <button class="action-btn success" data-action="save">
+                <span class="btn-icon">💾</span>
+                <span class="btn-text">Сохранить</span>
+                <span class="btn-gain">📤</span>
+            </button>
         </div>
 
-        <!-- Лента событий -->
         <div class="event-log" id="eventLog">
             <div class="log-entry">🏠 Добро пожаловать в общагу!</div>
             <div class="log-entry">💡 Жми на кнопки, чтобы выжить</div>
         </div>
 
-        <!-- Нижнее меню -->
         <div class="bottom-menu">
             <button class="menu-btn active" data-tab="room">🏠 Комната</button>
             <button class="menu-btn" data-tab="shop">🛒 Магазин</button>
@@ -133,16 +131,13 @@
             <button class="menu-btn" data-tab="friends">👥 Соседи</button>
         </div>
 
-        <!-- Модальное окно -->
         <div class="modal" id="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 id="modalTitle">Событие</h3>
                     <button class="modal-close" id="modalClose">✕</button>
                 </div>
-                <div class="modal-body" id="modalBody">
-                    Что-то произошло...
-                </div>
+                <div class="modal-body" id="modalBody"></div>
                 <div class="modal-footer">
                     <button class="modal-btn" id="modalBtn">Понятно</button>
                 </div>
@@ -152,4 +147,4 @@
 
     <script src="app.js"></script>
 </body>
-                  </html>
+</html>
