@@ -28,8 +28,7 @@ class TamagochiGame {
         this.events = [];
         this.maxEvents = 8;
         
-        // Константы
-        this.STAT_DECAY_RATE = 0.5; // % в минуту
+        this.STAT_DECAY_RATE = 0.5;
         this.MAX_STAT = 100;
         this.EAT_COST = 5;
         this.EAT_GAIN = 30;
@@ -43,36 +42,30 @@ class TamagochiGame {
     }
     
     init() {
-        // Загружаем имя из Telegram
         if (tg.initDataUnsafe?.user?.first_name) {
             this.studentName = tg.initDataUnsafe.user.first_name;
         }
         
-        // Загружаем сохранения
         this.loadGame();
-        
-        // Обновляем UI
         this.updateUI();
-        
-        // Запускаем деградацию статов
         this.startDecay();
-        
-        // Привязываем обработчики
         this.bindEvents();
         
-        // Добавляем приветственное событие
-        this.addEvent('🎓 Добро пожаловать в общагу! Выживи и не вылети.');
+        this.addEvent('🎓 Добро пожаловать в общагу!');
     }
     
     bindEvents() {
         document.querySelectorAll('[data-action]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const action = btn.dataset.action;
-                this.handleAction(action);
+                if (action === 'save') {
+                    this.sendDataToBot();
+                } else {
+                    this.handleAction(action);
+                }
             });
         });
         
-        // Меню
         document.querySelectorAll('.menu-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
@@ -81,7 +74,6 @@ class TamagochiGame {
             });
         });
         
-        // Модалка
         document.getElementById('modalClose').addEventListener('click', () => {
             document.getElementById('modal').classList.remove('show');
         });
@@ -93,7 +85,7 @@ class TamagochiGame {
     
     handleAction(action) {
         if (this.isSleeping && action !== 'sleep') {
-            this.showModal('😴 Спишь', 'Ты сейчас спишь. Дождись пробуждения или нажми "Поспать" чтобы проснуться.');
+            this.showModal('😴 Спишь', 'Ты сейчас спишь. Нажми "Поспать" чтобы проснуться.');
             return;
         }
         
@@ -112,7 +104,7 @@ class TamagochiGame {
     
     eat() {
         if (this.coins < this.EAT_COST) {
-            this.showModal('💰 Нет денег', 'Иди подработай, студент!');
+            this.showModal('💰 Нет денег', 'Иди подработай!');
             return;
         }
         
@@ -125,7 +117,6 @@ class TamagochiGame {
         this.stats.food = Math.min(this.MAX_STAT, this.stats.food + this.EAT_GAIN);
         this.stats.mood = Math.min(this.MAX_STAT, this.stats.mood + 5);
         
-        // Анимация еды
         this.updateFoodItems();
         this.addEvent(`🍽️ Вкусно поел. +${this.EAT_GAIN} сытости`);
         this.updateStatus();
@@ -133,7 +124,6 @@ class TamagochiGame {
     
     sleep() {
         if (this.isSleeping) {
-            // Просыпаемся
             this.isSleeping = false;
             clearTimeout(this.sleepTimer);
             document.getElementById('sleepZ').classList.remove('active');
@@ -147,7 +137,6 @@ class TamagochiGame {
             document.querySelector('[data-action="sleep"] .btn-text').textContent = 'Поспать';
             document.querySelector('[data-action="sleep"] .btn-time').textContent = '3ч';
         } else {
-            // Засыпаем
             if (this.stats.energy >= this.MAX_STAT) {
                 this.addEvent('⚡ Не хочется спать');
                 return;
@@ -162,11 +151,8 @@ class TamagochiGame {
             document.querySelector('[data-action="sleep"] .btn-text').textContent = 'Проснуться';
             document.querySelector('[data-action="sleep"] .btn-time').textContent = '';
             
-            // Таймер на 3 секунды (для демо, в реальности дольше)
             this.sleepTimer = setTimeout(() => {
-                if (this.isSleeping) {
-                    this.sleep(); // Автопробуждение
-                }
+                if (this.isSleeping) this.sleep();
             }, 3000);
         }
     }
@@ -190,7 +176,6 @@ class TamagochiGame {
         this.experience += 10;
         this.checkLevelUp();
         
-        // Добавляем книги
         this.booksCount = Math.min(5, this.booksCount + 1);
         this.updateBooks();
         
@@ -239,7 +224,6 @@ class TamagochiGame {
             this.stats.mood = Math.max(0, this.stats.mood - 20);
             this.addEvent(`😡 Спалился! Сосед заметил и обматерил. -20 настроения`);
             
-            // Шейк экрана
             document.querySelector('.room').classList.add('shake');
             setTimeout(() => document.querySelector('.room').classList.remove('shake'), 300);
         }
@@ -270,10 +254,28 @@ class TamagochiGame {
         this.updateStatus();
     }
     
+    sendDataToBot() {
+        const data = {
+            coins: this.coins,
+            level: this.level,
+            stats: this.stats,
+            experience: this.experience
+        };
+        
+        if (tg.isVersionAtLeast('6.1')) {
+            tg.sendData(JSON.stringify(data));
+            this.addEvent('💾 Прогресс отправлен в бота!');
+            this.showModal('✅ Успех', 'Данные отправлены боту. Можешь закрывать приложение.');
+        } else {
+            this.showModal('❌ Ошибка', 'Твоя версия Telegram не поддерживает отправку данных.');
+        }
+        
+        this.updateUI();
+    }
+    
     startDecay() {
         setInterval(() => {
             if (this.isSleeping) {
-                // Во сне тратится только еда
                 this.stats.food = Math.max(0, this.stats.food - this.STAT_DECAY_RATE * 0.3);
             } else {
                 this.stats.energy = Math.max(0, this.stats.energy - this.STAT_DECAY_RATE);
@@ -281,11 +283,10 @@ class TamagochiGame {
                 this.stats.mood = Math.max(0, this.stats.mood - this.STAT_DECAY_RATE * 0.8);
             }
             
-            // Проверка критических состояний
             this.checkCritical();
             this.updateUI();
             this.saveGame();
-        }, 5000); // Каждые 5 секунд для демо
+        }, 5000);
     }
     
     checkCritical() {
@@ -293,14 +294,12 @@ class TamagochiGame {
             this.addEvent('⚠️ Ты потерял сознание от усталости!');
             this.stats.energy = 20;
             this.stats.mood = Math.max(0, this.stats.mood - 30);
-            this.stats.study = Math.max(0, this.stats.study - 20);
         }
         
         if (this.stats.food <= 0) {
             this.addEvent('⚠️ Голодный обморок!');
             this.stats.food = 20;
             this.stats.energy = Math.max(0, this.stats.energy - 30);
-            this.stats.mood = Math.max(0, this.stats.mood - 40);
         }
         
         if (this.stats.mood <= 0) {
@@ -322,7 +321,6 @@ class TamagochiGame {
     }
     
     updateStatus() {
-        // Определяем статус по самому низкому показателю
         const minStat = Math.min(this.stats.energy, this.stats.food, this.stats.mood);
         
         if (this.isSleeping) {
@@ -341,7 +339,6 @@ class TamagochiGame {
         
         document.getElementById('statusBubble').textContent = this.status;
         
-        // Аватар в зависимости от уровня
         const avatars = ['🧑‍🎓', '👨‍🎓', '🧔‍♂️', '👨‍🏫', '🧙‍♂️'];
         const avatarIndex = Math.min(this.level - 1, avatars.length - 1);
         document.getElementById('avatar').textContent = avatars[avatarIndex];
@@ -362,7 +359,6 @@ class TamagochiGame {
         document.getElementById('moodValue').textContent = `${Math.round(this.stats.mood)}%`;
         document.getElementById('studyValue').textContent = `${Math.round(this.stats.study)}%`;
         
-        // Время суток
         const hour = new Date().getHours();
         const timeIcons = { night: '🌙', morning: '🌅', day: '☀️', evening: '🌆' };
         let timeIcon = timeIcons.day;
@@ -403,7 +399,6 @@ class TamagochiGame {
     }
     
     showTab(tab) {
-        // Заглушка для других вкладок
         if (tab !== 'room') {
             this.showModal(`📋 ${tab}`, 'Этот раздел в разработке. Скоро здесь будет магазин, рейтинг и соседи!');
             document.querySelector('.menu-btn[data-tab="room"]').classList.add('active');
